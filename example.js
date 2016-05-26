@@ -1,3 +1,4 @@
+var _ = require('./underscore');
 
 function Candy(name, price) {
   var weight;
@@ -29,6 +30,19 @@ function Candy(name, price) {
 function Container(param) {
     this.member = param;
     var secret = 3;
+    var openBy;
+    this.setOpenBy = function(privious_cell) { openBy = privious_cell; }
+    this.getOpenBy = function() { return openBy; }
+    var new_secret = (function(value) {
+
+      return value + 10;
+    })(param);
+    (function(param) {
+      secret = 21;
+    })(param);
+    this.getNewSecret = function() {
+      return new_secret;
+    }
     this.setSecret = function(value) {
       secret = value;
     }
@@ -37,12 +51,24 @@ function Container(param) {
     }
 }
 
-var chocolate =  new Candy('chocolate', 50);
+var new_array = [1, 3, 5, 6, 7, 0];
 
-var new_container = new Container(31);
+var a = new Container('a');
 
-// new_container.setSecret(21)
-// console.log(new_container.secret);
-new_container.setSecret(34);
-console.log(new_container.secret);
-console.log(new_container.getSecret());
+var b = new Container('b');
+b.setOpenBy(a);
+
+var c = new Container('c');
+c.setOpenBy(b);
+
+// console.log(a.getSecret());
+
+// var array = [a, b, c];
+// function popCellWithLowestFCost(array) {
+//   var min = _.min(array, function(cell) { return cell.getSecret(); })
+//   var index = _.findIndex(array, min);
+//   return  array.splice(index, 1);
+// }
+
+
+console.log(!_.isEmpty(a.getOpenBy()));
