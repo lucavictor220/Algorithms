@@ -1,13 +1,35 @@
 var _ = require('./underscore.js');
 var fs = require('fs');
 
-fs.readFile('./maze2.txt', 'utf8', (err, data) => {
+fs.readFile('mazes/maze1.txt', 'utf8', (err, data) => {
   if (err) throw err;
   var new_data = transformData(data);
   var shortest_path = findShortestPath(new_data);
-  console.log("++++++++++SHORTEST PATH +++++++++");
-  console.log(shortest_path.getRoad());
+  var solved_maze = showPath(shortest_path, new_data);
+  var text_buffer = createBuffer(solved_maze);
+  fs.writeFile('solved_mazes/maze1.txt', text_buffer, (err) => {
+    if (err) throw err;
+    console.log('Maze have been solved succesufully! :)');
+  });
 });
+
+function createBuffer(solved_maze) {
+  _.each(solved_maze, function(row, index, array) {
+    array[index] = row.join(' ');
+  })
+  solved_maze = solved_maze.join('\n');
+  return solved_maze;
+}
+
+function showPath(shortest_path, maze) {
+  var road = shortest_path.getRoad();
+  _.each(road, function(cell) {
+    if (cell.type == 'A' || cell.type == 'B')
+      return
+    maze[cell.row][cell.col] = 'p';
+  })
+  return maze;
+}
 
 function transformData(data) {
   data = data.split('\n');
@@ -102,7 +124,7 @@ function findShortestPath(data) {
   }
 
   var src = global_src;
-  var new_path = new Path(src);
+  new Path(src); // initial path
   var open = [];
   var closed = [];
   var current_cell;
@@ -147,10 +169,6 @@ function findShortestPath(data) {
   function setNewPath(current_cell, cell) {
     cell.setOpenBy(current_cell);
     var new_path = new Path(cell);
-    // console.log("+++++++++++++ PATH COST ++++++++++++")
-    // console.log(new_path.getRoad());
-    // console.log("+++++++++++++ PATH COST ++++++++++++")
-    debugger
     cell.setG(new_path.getCost());
   }
 
