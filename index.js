@@ -1,13 +1,13 @@
 var _ = require('./underscore.js');
 var fs = require('fs');
 
-fs.readFile('mazes/maze1.txt', 'utf8', (err, data) => {
+fs.readFile('mazes/maze3.txt', 'utf8', (err, data) => {
   if (err) throw err;
   var new_data = transformData(data);
   var shortest_path = findShortestPath(new_data);
   var solved_maze = showPath(shortest_path, new_data);
   var text_buffer = createBuffer(solved_maze);
-  fs.writeFile('solved_mazes/maze1.txt', text_buffer, (err) => {
+  fs.writeFile('solved_mazes/maze3.txt', text_buffer, (err) => {
     if (err) throw err;
     console.log('Maze have been solved succesufully! :)');
   });
@@ -124,38 +124,76 @@ function findShortestPath(data) {
   }
 
   var src = global_src;
-  new Path(src); // initial path
+  src.riched = true;
+  var initial_path = new Path(src); // initial path
   var open = [];
   var closed = [];
   var current_cell;
   open.push(src);
 
   // MAIN WHILE LOOP +++++++++++++++++++++++++
-  var iterator = 50;
-  while(iterator != 0) {
+  while(true) {
+    // console.log("************ OPEN LIST ********999999***")
+    // console.log(open);
+    // console.log("************ OPEN LIST ************")
     current_cell = popCellWithLowestFCost(open);
+    // console.log("////////////////////////////////////");
+    // console.log(current_cell);
+    // console.log("////////////////////////////////////");
     current_cell.riched = true;
     closed.push(current_cell);
-    // console.log(current_cell);
     if (current_cell.getH() === 0) { // path have been found
       var shortest_path = new Path(current_cell);
       return shortest_path;
     }
 
     var new_cells = findNearbyCells(current_cell);
+    new_cells = filterCells(new_cells, closed);
+    // console.log("************ new_cells LIST ************")
+    // console.log(new_cells);
+    // console.log("************ new_cells LIST ************")
     addOpenByCellProperty(current_cell, new_cells);
     _.each(new_cells, function(cell) {
-      if (cell.type == '-' || closed.indexOf(cell) != -1) {
+      if (cell.type == '-' || cell.riched == true) {
         return;
       }
-      if (checkNewPath(cell, current_cell) || open.indexOf(cell) == -1) {
+      if (checkNewPath(cell, current_cell) || cell.riched == false) {
         setNewPath(current_cell, cell);
         if (open.indexOf(cell) == -1) {
           open.push(cell);
         }
       }
     });
-    iterator--;
+    // console.log("++++++++++++ CELL +++++++++++")
+    // console.log(current_cell.row);
+    // console.log(current_cell.col);
+    // // console.log(current_cell.getH());
+    // var path = new Path(current_cell);
+    // console.log(path.getRoad())
+    // console.log("************ closed LIST ********777777***")
+    // console.log(closed);
+    // console.log("************ closed LIST ************")
+    // console.log("************ OPEN LIST ********777777***")
+    // console.log(open);
+    // console.log("************ OPEN LIST ************")
+    // console.log("++++++++++++ CELL +++++++++++")
+  }
+
+  function filterCells(new_cells, closed) {
+    new_cells =  _.filter(new_cells, function(cell) { return cell.type != '-'; });
+    new_cells = _.filter(new_cells, function(cell) { return cell.riched == false; })
+    return _.filter(new_cells, function(cell) {
+      var found = _.find(closed, function(closed_cell) {
+        var row = cell.row === closed_cell.row;
+        var col = cell.col === closed_cell.col;
+        var type = cell.type === closed_cell.type;
+        return row && col && type;
+      });
+      if (found) {
+        return false;
+      }
+      return true;
+    });
   }
 
   function checkNewPath(cell ,current_cell) {
